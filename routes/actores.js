@@ -18,7 +18,6 @@ router.get('/', async (req, res, next) => {
 router.get('/search', async(req, res, next) => {
   try{
     const nombre = req.query.nombre;
-    console.log(nombre)
     const actor = await Actores.findOne({nombre})
     res.render('personas/actorDetails', actor )
   }
