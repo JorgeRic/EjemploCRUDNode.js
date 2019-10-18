@@ -13,3 +13,4 @@ const actoresSchema = new Schema({
 const Actores = mongoose.model('Actores', actoresSchema);
 
 module.exports = Actores; 
+// image:{type: String}

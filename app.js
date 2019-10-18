@@ -5,10 +5,15 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const hbs = require('hbs');
 const mongoose = require('mongoose');
+const session = require('express-session');
+const MongoStore = require('connect-mongo')(session);
 
-const indexRouter = require('./routes/index');
 const actoresRouter = require('./routes/actores')
 const peliculasRouter = require('./routes/peliculas');
+const indexRouter = require('./routes/index');
+// const usersRouter = require('./routes/users');
+// const authRouter = require('./routes/auth');
+
 const app = express();
 
 mongoose.connect('mongodb://localhost/actoresypeliculas', {
@@ -16,6 +21,29 @@ mongoose.connect('mongodb://localhost/actoresypeliculas', {
   useNewUrlParser: true,
   reconnectTries: Number.MAX_VALUE
 });
+
+app.use(session({
+  store: new MongoStore({
+    mongooseConnection: mongoose.connection,
+    ttl: 24 * 60 * 60 // 1 day
+    //vida de la session 
+  }),
+  secret: 'some-string',
+  resave: true,
+  saveUninitialized: true,
+  cookie: {
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000
+    //vida de la session
+  }
+}));
+
+// Crea variables locales que nos acceso desde las views
+app.use((req, res, next) => {
+  app.locals.currentUser = req.session.currentUser;
+  next();
+});
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
@@ -30,7 +58,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/actores', actoresRouter)
 app.use('/peliculas', peliculasRouter)
-
+// app.use('/users', usersRouter);
+// app.use('/auth', authRouter);
 // -- 404 and error handler
 
 // NOTE: requires a views/not-found.ejs template
